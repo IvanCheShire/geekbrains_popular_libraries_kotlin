@@ -10,4 +10,8 @@ class CountersModel {
         counters[index]++
         return getCurrent(index)
     }
+    val btn_counter1 = 1000037;
+    val btn_counter2 = 1000036;
+    val btn_counter3 = 1000041;
+
 }
