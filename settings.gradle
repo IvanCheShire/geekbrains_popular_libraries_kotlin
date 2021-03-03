@@ -1,0 +1,2 @@
+include ':app'
+rootProject.name = "geekbrains_popular_libraries_kotlin"
