@@ -25,7 +25,7 @@ class UserFragment : MvpAppCompatFragment(), UserView, BackButtonListener {
     }
 
     val presenter: UserPresenter by moxyPresenter {
-        val user = arguments?.getParcelable<GithubUser>(USER_ARG) as GithubUser //При отсутствии аргумента приложение упадет. Так задумано.
+        val user = arguments?.getParcelable<GithubUser>(USER_ARG) as GithubUser
         UserPresenter(App.instance.router, user)
     }
 
