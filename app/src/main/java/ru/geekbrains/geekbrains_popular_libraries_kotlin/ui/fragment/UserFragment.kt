@@ -2,15 +2,23 @@ package ru.geekbrains.geekbrains_popular_libraries_kotlin.ui.fragment
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.LinearLayoutManager
 import moxy.MvpAppCompatFragment
 import moxy.ktx.moxyPresenter
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import ru.geekbrains.geekbrains_popular_libraries_kotlin.R
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.databinding.FragmentUserBinding
+import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.model.api.ApiHolder
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.model.entity.GithubUser
+import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.model.repo.RetrofitGithubUserReposRepo
+import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.model.repo.RetrofitGithubUsersRepo
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.presenter.UserPresenter
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.view.UserView
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.ui.App
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.ui.BackButtonListener
+import ru.geekbrains.geekbrains_popular_libraries_kotlin.ui.adapter.UserReposRVAdapter
 
 class UserFragment : MvpAppCompatFragment(), UserView, BackButtonListener {
 
@@ -24,25 +32,46 @@ class UserFragment : MvpAppCompatFragment(), UserView, BackButtonListener {
         }
     }
 
-    val presenter: UserPresenter by moxyPresenter {
-        val user = arguments?.getParcelable<GithubUser>(USER_ARG) as GithubUser //При отсутствии аргумента приложение упадет. Так задумано.
-        UserPresenter(App.instance.router, user)
+    val presenter by moxyPresenter {
+        UserPresenter(
+            App.instance.router,
+            this.arguments?.getParcelable<GithubUser>("user"),
+            RetrofitGithubUserReposRepo(
+                ApiHolder.api
+            ),
+            AndroidSchedulers.mainThread()
+        )
+    }
+    val adapter by lazy {
+        UserReposRVAdapter(presenter.userReposListPresenter)
     }
 
-    private var vb: FragmentUserBinding? = null
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?) =
-        FragmentUserBinding.inflate(inflater, container, false).also {
-            vb = it
-        }.root
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        vb = null
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        val view = View.inflate(context, R.layout.fragment_user, null)
+        return view
     }
 
-    override fun setLogin(text: String) {
-        vb?.tvLogin?.text = text
+    override fun onResume() {
+        super.onResume()
+        presenter.onResume()
+    }
+
+    override fun setLoginToToolbar(userLogin: String?) {
+        activity?.findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)?.title = userLogin
+    }
+
+    override fun removeLoginFromToolbar() {
+        activity?.findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)?.title = getResources().getString(R.string.app_name);
+    }
+
+    override fun init() {
+        rv_repos.layoutManager = LinearLayoutManager(requireContext())
+        rv_repos.adapter = adapter
+    }
+
+    override fun updateUsersList() {
+        adapter.notifyDataSetChanged()
     }
 
     override fun backPressed() = presenter.backPressed()
