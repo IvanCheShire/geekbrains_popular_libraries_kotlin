@@ -8,11 +8,12 @@ import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.model.entity.Github
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.model.entity.GithubUser
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.model.repo.RetrofitGithubUserReposRepo
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.model.repo.RetrofitGithubUsersRepo
+import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.navigation.Screens
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.presenter.list.IUserReposListPresenter
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.view.UserView
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.view.list.RepoItemView
 
-class UserPresenter(val router: Router, val user: GithubUser?, val userReposRepoRetrofit: RetrofitGithubUserReposRepo, val scheduler: Scheduler) : MvpPresenter<UserView>() {
+class UserPresenter(val router: Router, val user: GithubUser, val userReposRepoRetrofit: RetrofitGithubUserReposRepo, val scheduler: Scheduler) : MvpPresenter<UserView>() {
 
     class UserReposListPresenter : IUserReposListPresenter {
         override var itemClickListener: ((RepoItemView) -> Unit)? = null
@@ -37,7 +38,8 @@ class UserPresenter(val router: Router, val user: GithubUser?, val userReposRepo
         loadData()
 
         userReposListPresenter.itemClickListener = { view ->
-
+            val repository = userReposListPresenter.repos[view.pos]
+            router.navigateTo(Screens.RepositoryScreen(repository))
         }
     }
 
@@ -46,10 +48,7 @@ class UserPresenter(val router: Router, val user: GithubUser?, val userReposRepo
     }
 
     fun loadData() {
-        var userRepos = user?.reposUrl
-        userRepos?.let {
-            disposables.add(
-                userReposRepoRetrofit.getUserRepos(userRepos)
+        userReposRepoRetrofit.getUserRepos(user)
                     .retry(3)
                     .observeOn(scheduler)
                     .subscribe(
@@ -59,8 +58,8 @@ class UserPresenter(val router: Router, val user: GithubUser?, val userReposRepo
                             viewState.updateUsersList()
                         },
                         { println("onError: ${it.message}") })
-            )
-        }
+
+
     }
 
     fun backPressed(): Boolean {

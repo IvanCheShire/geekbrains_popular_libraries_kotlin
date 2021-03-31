@@ -12,6 +12,7 @@ import ru.geekbrains.geekbrains_popular_libraries_kotlin.R
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.databinding.FragmentUserBinding
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.model.api.ApiHolder
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.model.entity.GithubUser
+import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.model.entity.room.db.Database
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.model.repo.RetrofitGithubUserReposRepo
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.model.repo.RetrofitGithubUsersRepo
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.presenter.UserPresenter
@@ -19,6 +20,8 @@ import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.view.UserView
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.ui.App
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.ui.BackButtonListener
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.ui.adapter.UserReposRVAdapter
+import ru.geekbrains.geekbrains_popular_libraries_kotlin.ui.cache.RoomGithubUserReposCache
+import ru.geekbrains.geekbrains_popular_libraries_kotlin.ui.network.AndroidNetworkStatus
 
 class UserFragment : MvpAppCompatFragment(), UserView, BackButtonListener {
 
@@ -35,10 +38,9 @@ class UserFragment : MvpAppCompatFragment(), UserView, BackButtonListener {
     val presenter by moxyPresenter {
         UserPresenter(
             App.instance.router,
-            this.arguments?.getParcelable<GithubUser>("user"),
-            RetrofitGithubUserReposRepo(
-                ApiHolder.api
-            ),
+            this.arguments?.getParcelable<GithubUser>("user") as GithubUser,
+            RetrofitGithubUserReposRepo(ApiHolder.api, AndroidNetworkStatus(requireContext()), RoomGithubUserReposCache(
+                Database.getInstance()) ),
             AndroidSchedulers.mainThread()
         )
     }

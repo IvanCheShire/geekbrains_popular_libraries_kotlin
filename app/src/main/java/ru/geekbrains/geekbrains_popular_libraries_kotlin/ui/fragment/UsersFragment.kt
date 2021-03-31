@@ -12,6 +12,7 @@ import moxy.ktx.moxyPresenter
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.R
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.databinding.FragmentUsersBinding
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.model.api.ApiHolder
+import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.model.entity.room.db.Database
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.model.repo.GithubUsersRepo
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.model.repo.RetrofitGithubUsersRepo
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.presenter.UsersPresenter
@@ -19,15 +20,19 @@ import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.view.UsersView
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.ui.App
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.ui.BackButtonListener
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.ui.adapter.UsersRVAdapter
+import ru.geekbrains.geekbrains_popular_libraries_kotlin.ui.cache.RoomGithubUsersCache
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.ui.image.GlideImageLoader
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.ui.navigation.AndroidScreens
+import ru.geekbrains.geekbrains_popular_libraries_kotlin.ui.network.AndroidNetworkStatus
 
 class UsersFragment : MvpAppCompatFragment(), UsersView, BackButtonListener {
     companion object {
         fun newInstance() = UsersFragment()
     }
 
-    val presenter: UsersPresenter by moxyPresenter { UsersPresenter(App.instance.router, RetrofitGithubUsersRepo(ApiHolder.api), AndroidSchedulers.mainThread()) }
+    val presenter: UsersPresenter by moxyPresenter { UsersPresenter(App.instance.router, RetrofitGithubUsersRepo(ApiHolder.api, AndroidNetworkStatus(requireContext()), RoomGithubUsersCache(
+        Database.getInstance())), AndroidSchedulers.mainThread())
+    }
     val adapter by lazy{ UsersRVAdapter(presenter.usersListPresenter, GlideImageLoader())}
 
 
@@ -41,5 +46,5 @@ class UsersFragment : MvpAppCompatFragment(), UsersView, BackButtonListener {
     override fun updateUsersList() {
         adapter.notifyDataSetChanged()
     }
-    override fun backPressed() = presenter.backClick()
+    override fun backPressed() = presenter.backPressed()
 }
