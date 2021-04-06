@@ -13,15 +13,23 @@ import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.view.MainView
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.ui.App
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.ui.BackButtonListener
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.ui.navigation.AndroidScreens
+import ru.terrakok.cicerone.NavigatorHolder
+import javax.inject.Inject
 
 class MainActivity : MvpAppCompatActivity(), MainView {
 
+    @Inject
+    lateinit var navigatorHolder: NavigatorHolder
+
     val navigator = AppNavigator(this, R.id.container)
 
-    private val presenter by moxyPresenter { MainPresenter(App.instance.router, AndroidScreens()) }
+    private val presenter by moxyPresenter {MainPresenter().apply {
+        App.instance.appComponent.inject(this)
+    } }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        App.instance.appComponent.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val toolbar: Toolbar = findViewById<View>(R.id.toolbar) as Toolbar

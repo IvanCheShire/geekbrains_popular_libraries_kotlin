@@ -6,8 +6,12 @@ import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.navigation.IScreens
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.view.MainView
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.rxlearn.Creation
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.rxlearn.Operators
+import javax.inject.Inject
 
-class MainPresenter(val router: Router, val screens: IScreens) : MvpPresenter<MainView>() {
+class MainPresenter(): MvpPresenter<MainView>() {
+
+    @Inject
+    lateinit var router: Router
 
     override fun onFirstViewAttach() {
         super.onFirstViewAttach()

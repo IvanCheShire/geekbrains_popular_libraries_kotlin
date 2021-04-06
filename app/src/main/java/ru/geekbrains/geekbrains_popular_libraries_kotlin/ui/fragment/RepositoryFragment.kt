@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.github.terrakok.cicerone.Router
 import moxy.MvpAppCompatFragment
 import moxy.ktx.moxyPresenter
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.R
@@ -12,8 +13,11 @@ import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.presenter.Repositor
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.view.RepositoryView
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.ui.App
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.ui.BackButtonListener
+import javax.inject.Inject
 
 class RepositoryFragment : MvpAppCompatFragment(), RepositoryView, BackButtonListener {
+    @Inject
+    lateinit var router: Router
 
     companion object {
         private const val REPOSITORY_ARG = "repository"
@@ -26,8 +30,9 @@ class RepositoryFragment : MvpAppCompatFragment(), RepositoryView, BackButtonLis
     }
 
     val presenter: RepositoryPresenter by moxyPresenter {
+        App.instance.appComponent.inject(this)
         val repository = arguments?.getParcelable<GithubRepository>(REPOSITORY_ARG) as GithubRepository
-        RepositoryPresenter(App.instance.router, repository)
+        RepositoryPresenter(repository).apply { App.instance.appComponent.inject(this) }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?) =

@@ -6,14 +6,20 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable
 import moxy.MvpPresenter
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.model.entity.GithubRepository
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.model.entity.GithubUser
+import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.model.repo.IGithubUserReposRepo
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.model.repo.RetrofitGithubUserReposRepo
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.model.repo.RetrofitGithubUsersRepo
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.navigation.Screens
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.presenter.list.IUserReposListPresenter
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.view.UserView
 import ru.geekbrains.geekbrains_popular_libraries_kotlin.mvp.view.list.RepoItemView
+import javax.inject.Inject
 
-class UserPresenter(val router: Router, val user: GithubUser, val userReposRepoRetrofit: RetrofitGithubUserReposRepo, val scheduler: Scheduler) : MvpPresenter<UserView>() {
+class UserPresenter(val user: GithubUser) : MvpPresenter<UserView>() {
+
+    @Inject lateinit var router: Router
+    @Inject lateinit var userReposRepo: IGithubUserReposRepo
+    @Inject lateinit var uiScheduler: Scheduler
 
     class UserReposListPresenter : IUserReposListPresenter {
         override var itemClickListener: ((RepoItemView) -> Unit)? = null
@@ -44,14 +50,14 @@ class UserPresenter(val router: Router, val user: GithubUser, val userReposRepoR
     }
 
     fun onResume(){
-        viewState.setLoginToToolbar(userLogin = user?.login)
+        viewState.setLoginToToolbar(userLogin = user.login)
     }
 
     fun loadData() {
-        userReposRepoRetrofit.getUserRepos(user)
-                    .retry(3)
-                    .observeOn(scheduler)
-                    .subscribe(
+        userReposRepo.getUserRepos(user)
+            .retry(3)
+            .observeOn(uiScheduler)
+            .subscribe(
                         {
                             userReposListPresenter.repos.clear()
                             userReposListPresenter.repos.addAll(it)
